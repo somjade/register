@@ -33,15 +33,15 @@ When a backend server receives a request with a JWT, the first thing to do is to
 - Check that the JWT is well formed
 - Check the signature
 - Validate the standard claims
-- Check the Client permissions (scopes)
+- Check the Client permissions
 
 #### RESTful APIs
 
 Accessible at the http://localhost on port 8008.
 
-1. Register: http://localhost:8008/v1/users/register (Not validate the access token)
-2. Login: http://localhost:8008/v1/users/login (Not validate the access token)
-3. Get my profile: http://localhost:8008/v1/users/me (Validate the access token)
+1. Register: http://localhost:8008/v1/users/register (Not validate the JWT access token)
+2. Login: http://localhost:8008/v1/users/login (Not validate the access JWT token)
+3. Get my profile: http://localhost:8008/v1/users/me (Validate the access JWT token)
 
 # Installation Guide & Test
 
@@ -62,10 +62,82 @@ Database name: register
 Database user: register_app
 Database password: user1234!
 ```
-- Create by local MySQL installed use 2.1
-- Create by docker-compose use 2.2
+- Create by docker-compose use 2.1 (Default)
+- Create by local MySQL installed use 2.2 (Optional)
 
-2.1 Setup by local MySQL installed
+2.1 Setup by docker-compose ([Install Docker Compose](https://docs.docker.com/compose/install/) if does not exist.)
+
+Please make sure you are at root of clone repository directory
+
+* Run docker-compose to create database ans db user
+```
+$ cd register
+$ docker-compose up -d
+...
+Creating network "register-service_default" with the default driver
+Creating register-service_db_1 ... done
+```
+
+   * Verify mysql up and running by command `docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'`, database and db user created
+
+If run command and found below error, please close current terminal or program that current access database file.
+And open new terminal to re-run again. 
+```
+$ docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+```
+
+The success should same as below   
+
+```
+$ docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.22 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| register           |
+| sys                |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> SHOW GRANTS FOR 'register_app';
++------------------------------------------------------------+
+| Grants for register_app@%                                  |
++------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `register_app`@`%`                   |
+| GRANT ALL PRIVILEGES ON `register`.* TO `register_app`@`%` |
++------------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+mysql> USE register;
+Database changed
+mysql>
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+
+mysql>
+```
+
+2.2 Setup by local MySQL installed
 
 - Connect to MySQL local installed and create database and db user.
 
@@ -113,50 +185,6 @@ mysql> SHOW GRANTS FOR 'register_app'@'localhost';
 | GRANT ALL PRIVILEGES ON `register`.* TO 'register_app'@'localhost' |
 +--------------------------------------------------------------------+
 2 rows in set (0.01 sec)
-```
-
-2.2 Setup by docker-compose ([Install Docker Compose](https://docs.docker.com/compose/install/) if does not exist.)
-
-Please make sure you are at root of clone repository directory
-
-* Run docker-compose to create database ans db user
-```
-$ cd register
-$ docker-compose up -d
-...
-Creating network "register-service_default" with the default driver
-Creating register-service_db_1 ... done
-```
-
-   * Verify mysql up and running, database and db user created
-```
-$ docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 8
-Server version: 8.0.22 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql>
-
-mysql> SHOW DATABASES;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| register           |
-| sys                |
-+--------------------+
-5 rows in set (0.02 sec)
 ```
 
 ### Run & Test
@@ -244,7 +272,7 @@ mysql> DESC USERS;
 mysql> 
 ```
 
-2.If everything works as expected, our api will be up and running ready to test, we can use a tool like `Postman` or `curl` to issue request to the available endpoints:
+2.If everything works as expected, our api will be up and running ready to test, we can use a tool like `Postman` or `curl` (Default) to issue request to the available endpoints:
 
 Open new terminal use curl to issue request
 
@@ -414,7 +442,24 @@ Test login into the application (JWT is generated) and get user profile steps
 * Login by user name (email) and password to get `{jwt access token}`.
 * Replace `{jwt access token}` form login response replace to **header** `Application: Barer {jwt access token}` get user profile.
 
-##### Scenario#1 Login and get profile by user name **"silver@abc.com"**
+##### Scenario#1 Login with user name does not register before
+
+* Login Request: 
+```
+curl -s -H "Content-Type: application/json" -X POST -d '{ 
+  "user_name": "doesnotexists@abc.com", 
+  "password": "Doesnotexists2345!" 
+}' http://localhost:8008/v1/users/login
+```
+* Login Response:
+```json
+{
+  "status_code":404,
+  "message":"Could not found user in database"
+}
+```
+
+##### Scenario#2 Login and get profile by user name **"silver@abc.com"**
 
 * Login Request: 
 ```
@@ -446,6 +491,6 @@ curl -s -H "Content-Type: application/json" -H 'Authorization: Bearer {jwt acces
 }
 ```
 
-##### Repeat Scenario#1 steps for other user to see the result.
-* User name: gold@abc.com, password: Gold12345!
-* User name: platinum@abc.com, password: Platinum12345!
+##### Repeat Scenario#2 steps for other user to see the result.
+* User name: `gold@abc.com`, password: `Gold12345!`
+* User name: `platinum@abc.com`, password: `Platinum12345!`
