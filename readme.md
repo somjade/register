@@ -205,7 +205,7 @@ spring:
     jpa:
 ```
 
-1.Then, we run the **RESTful API** by either issuing the by command command line or by building and running the project in your favorite IDE.
+1.Then, we run the **RESTful API** by either issuing the by command line or by building and running the project in your favorite IDE.
 
 1.1.Open your command-line terminal and change directory to the root of cloned source code directory from github. 
 
