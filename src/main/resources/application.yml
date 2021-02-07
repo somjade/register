@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3307/register?characterEncoding=UTF-8
+    username: register_app
+    password: user1234!
+    flyway:
+      enabled: true
+    jpa:
+      properties:
+        hibernate:
+          enable_lazy_load_no_trans: true
+      hibernate:
+        ddl-auto: none
+      database: mysql
+      database-platform: org.hibernate.dialect.MySQL5Dialect
+      open-in-view: false
+      generate-ddl: false
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+server:
+  port: 8008
+
+application:
+  jwt:
+    salt: $2a$08$e02zo.x0cFVZq71FMp82DuGONIYc4ahKyPbAN07pdDxG3uMaXgcIu
+    public-key-file: "classpath:public_key.pem"
+    private-key-file: "classpath:private_key_pkcs8.pem"

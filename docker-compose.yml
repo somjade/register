@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+  db:
+    image: mysql:8.0.22
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'register'
+      MYSQL_USER: 'register_app'
+      MYSQL_PASSWORD: 'user1234!'
+      MYSQL_ROOT_PASSWORD: 'root7890!'
+    ports:
+      - '3307:3306'
+    volumes:
+      - ./mysql-datafile:/var/lib/mysql
