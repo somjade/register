@@ -47,9 +47,10 @@ Accessible at the http://localhost on port 8008.
 
 ### Prerequisite
 
-1.Clone source code from github 
+1.Clone source code from github and change to `register` clone directory.
 ```
 $ git clone https://github.com/somjade/register.git
+$ cd register
 ```
 
 2.Setup database and database user
@@ -82,7 +83,11 @@ Creating register-service_db_1 ... done
 
 If run command and found below error, please close current terminal or program that current access database file.
 And open new terminal to re-run again. 
+
+Please make sure you are at root of clone repository directory (`register`).
+
 ```
+$ cd register
 $ docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
@@ -90,7 +95,10 @@ ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: Y
 
 The success should same as below   
 
+Please make sure you are at root of clone repository directory (`register`).
+
 ```
+$ cd register
 $ docker-compose exec db sh -c 'mysql -uroot -p${MYSQL_ROOT_PASSWORD}'
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
